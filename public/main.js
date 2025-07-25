@@ -7,7 +7,10 @@ const app = new PIXI.Application();
 await app.init({
   width: 704,
   height: 704,
-  background: 0x000000
+  resolution: 1,
+  background: 0x000000,
+  antialias: false,
+  autoDensity: true,
 });
 
 document.body.appendChild(app.canvas);

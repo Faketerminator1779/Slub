@@ -2,7 +2,6 @@ import * as PIXI from "https://cdn.skypack.dev/pixi.js@8.1.1";
 export default class LobbyState {
     constructor(game) {
         this.game = game;
-        this.square = null;
     }
 
     async enter() {
@@ -13,25 +12,31 @@ export default class LobbyState {
         ui.id = "lobby-ui";
         ui.innerHTML = `
             <h2>Lobby</h2>
-            <input type="text" id="player-name" placeholder="Wpisz SWÓJ kod" />
-            <button id="toExplore">Wejdź do gry</button>
+            <input type="text" id="code" placeholder="Wpisz SWÓJ kod" />
+            <button id="enterBtn">Wejdź do gry</button>
         `;
         document.body.appendChild(ui);
 
-        document.getElementById("toExplore").onclick = () => {
-            const name = document.getElementById("player-name").value.trim();
-            if (name) {
-                this.game.playerData = { name };
-                this.game.changeState("explore");
+        document.getElementById("enterBtn").onclick = () => {
+            const code = document.getElementById("code").value;
+            if (code) {
+                this.game.playerData = { code };
+                this.game.socket.emit("joinGame", code);
             }
         };
 
+        this.game.socket.on("joinDenied", (msg) => {
+            console.log(msg)
+        });
 
-        this.game.changeState("explore");
+        this.game.socket.on("gameJoined", (data) => {
+            this.game.map = data.map;
+            this.game.playerData = data.player;
+            this.game.changeState("explore");
+        });
     }
 
     exit() {
-        this.game.app.canvas.style.display = "block";
         document.getElementById("lobby-ui")?.remove();
     }
 
