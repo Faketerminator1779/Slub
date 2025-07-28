@@ -3,9 +3,13 @@ const app = express();
 const http = require('http').createServer(app);
 const io = require('socket.io')(http);
 
-const kody = {
+const codes = {
   "1": "Fake"
 }
+
+const playerTextures = {
+    Fake: 'Fake',
+};
 
 const MAP_WIDTH = 11;
 const MAP_HEIGHT = 11;
@@ -68,6 +72,26 @@ gameMap[3][7].object = 'bench_left';
 gameMap[3][8].object = 'bench_middle';
 gameMap[3][9].object = 'bench_right';
 
+gameMap[2][4].object = 'carpet_top_left';
+gameMap[2][5].object = 'carpet_top';
+gameMap[2][6].object = 'carpet_top_right';
+
+for (let y = 0; y < 6; y++) {
+  gameMap[3+y][4].object = 'carpet_left';
+}
+
+for (let y = 0; y < 6; y++) {
+  gameMap[3+y][5].object = 'carpet';
+}
+
+for (let y = 0; y < 6; y++) {
+  gameMap[3+y][6].object = 'carpet_right';
+}
+
+gameMap[9][4].object = 'carpet_down_left';
+gameMap[9][5].object = 'carpet_down';
+gameMap[9][6].object = 'carpet_down_right';
+
 const mapObjects = {
   window:  { walkable: false },
   wall:  { walkable: false },
@@ -82,7 +106,7 @@ io.on('connection', (socket) => {
     console.log(`User connected: ${socket.id}`);
 
     socket.on('joinGame', (code) => {
-        const role = kody[code];
+        const role = codes[code];
 
         if (!role) {
             socket.emit('joinDenied', 'Niepoprawny kod');
@@ -92,11 +116,14 @@ io.on('connection', (socket) => {
         const spawnX = 5;
         const spawnY = 5;
 
+        const texture = playerTextures[role];
+
         players[socket.id] = {
             id: socket.id,
             x: spawnX,
             y: spawnY,
             role: role,
+            texture: texture,
         };
 
         socket.emit('gameJoined', {
@@ -104,7 +131,7 @@ io.on('connection', (socket) => {
             player: {
                 x: spawnX,
                 y: spawnY,
-                role: role,
+                texture: texture
             },
         });
 
